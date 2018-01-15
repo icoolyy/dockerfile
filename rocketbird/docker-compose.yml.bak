@@ -1,0 +1,85 @@
+version: '2'
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy:latest
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    ports:
+      - "80:80"
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "my-secret-pw"
+    volumes:
+      - /tmp/mysql:/root/
+    ports:
+      - "3307:3306"
+  redis:
+    image: hub.c.163.com/icoolyy/redis
+    command: redis-server --appendonly yes
+  admin:
+    image: hub.c.163.com/icoolyy/pc_admin:latest
+    restart: always
+    environment:
+      VIRTUAL_HOST: "local.rocketbird.cn"
+    command: bash -c "/usr/local/bin/composer config -g repo.packagist composer https://packagist.phpcomposer.com && /usr/sbin/apache2ctl -D FOREGROUND"
+    volumes:
+      - ~/Code/new_qn:/var/www/laravel/
+    links:
+      - mysql:mysql.qn.local
+      - redis:redis.qn.local
+  vue-admin:
+     image: hub.c.163.com/icoolyy/nodejs_rb:latest
+     restart: always
+     environment:
+       VIRTUAL_HOST: "i-test.rocketbird.cn"
+       VIRTUAL_PORT: "8080"
+     volumes:
+       - ~/Code/web-fe:/app
+     expose:
+       - "8080"
+  vue-admin-v2:
+     image: nodejs/rocketbird:latest
+     restart: always
+     environment:
+       VIRTUAL_HOST: "vip-test.rocketbird.cn"
+       VIRTUAL_PORT: "8089"
+     volumes:
+       - ~/Code/web-fe-v2:/app
+     expose:
+       - "8089"
+  membership:
+    image: hub.c.163.com/icoolyy/pc_admin:latest
+    restart: always
+    environment:
+      VIRTUAL_HOST: "ms.rocketbird.cn"
+    command: bash -c "/usr/local/bin/composer config -g repo.packagist composer https://packagist.phpcomposer.com && /usr/sbin/apache2ctl -D FOREGROUND"
+    volumes:
+      - ~/Code/membership2.0:/var/www/laravel/
+    links:
+      - mysql:mysql.qn.local
+      - redis:redis.qn.local
+  order:
+    image: hub.c.163.com/icoolyy/pc_admin:latest
+    restart: always
+    environment:
+      VIRTUAL_HOST: "order.rocketbird.cn"
+    command: bash -c "/usr/local/bin/composer config -g repo.packagist composer https://packagist.phpcomposer.com && /usr/sbin/apache2ctl -D FOREGROUND"
+    volumes:
+      - ~/Code/order:/var/www/laravel/
+    links:
+      - mysql:mysql.qn.local
+      - redis:redis.qn.local
+  statistics:
+    image: hub.c.163.com/icoolyy/pc_admin:latest
+    restart: always
+    environment:
+      VIRTUAL_HOST: "ss.rocketbird.cn"
+    command: bash -c "/usr/local/bin/composer config -g repo.packagist composer https://packagist.phpcomposer.com && /usr/sbin/apache2ctl -D FOREGROUND"
+    volumes:
+      - ~/Code/statistics:/var/www/laravel/
+    links:
+      - mysql:mysql.qn.local
+      - redis:redis.qn.local
